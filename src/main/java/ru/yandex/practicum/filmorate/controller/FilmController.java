@@ -1,62 +1,88 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
+@Validated
 @RestController
+@RequestMapping("/films")
 public class FilmController {
 
     private final Map<Integer, Film> films = new HashMap<>();
 
     @GetMapping
-    public Collection<Film> findAll() {
+    public Collection<Film> getAllFilms() {
         return films.values();
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
-        // проверяем выполнение необходимых условий
-        if (film.getDescription() == null || film.getDescription().isBlank()) {
-            throw new ConditionsNotMetException("Описание не может быть пустым");
+    public Film create(@Valid @RequestBody Film film) {
+        boolean isNoValidRelease = film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28));
+        if (film.getName() == null) {
+            log.error("Название не может быть пустым");
+            throw new ValidationException("Название не может быть пустым");
+        } else if (film.getDescription().length() > 200) {
+            log.error("Описание не может быть больше 200 символов");
+            throw new ValidationException("Описание не может быть больше 200 символов");
+        } else if (isNoValidRelease) {
+            log.error("Некорректная дата релиза фильма");
+            throw new ValidationException("Некорректная дата релиза фильма");
+        } else if (film.getDuration() < 0) {
+            log.error("Продолжительность фильма должна быть положительным числом");
+            throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
-        // формируем дополнительные данные
         film.setId(getNextId());
-        film.setPostDate(Instant.now());
-        // сохраняем новую публикацию в памяти приложения
         films.put(film.getId(), film);
+        log.info("Добавлен фильм " + film);
         return film;
     }
 
     @PutMapping
-    public Film update(@RequestBody Film newFilm) {
-        // проверяем необходимые условия
+    public Film update(@Valid @RequestBody Film newFilm) {
         if (newFilm.getId() == null) {
-            throw new ConditionsNotMetException("Id должен быть указан");
+            throw new ValidationException("Id должен быть указан");
         }
         if (films.containsKey(newFilm.getId())) {
             Film oldFilm = films.get(newFilm.getId());
-            if (newFilm.getDescription() == null || newFilm.getDescription().isBlank()) {
-                throw new ConditionsNotMetException("Описание не может быть пустым");
+            boolean isNoValidRelease = newFilm.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28));
+            if (newFilm.getName() == null) {
+                log.error("Название не может быть пустым");
+                throw new ValidationException("Название не может быть пустым");
+            } else if (newFilm.getDescription().length() > 200) {
+                log.error("Описание не может быть больше 200 символов");
+                throw new ValidationException("Описание не может быть больше 200 символов");
+            } else if (isNoValidRelease) {
+                log.error("Некорректная дата релиза фильма");
+                throw new ValidationException("Некорректная дата релиза фильма");
+            } else if (newFilm.getDuration() < 0) {
+                log.error("Продолжительность фильма должна быть положительным числом");
+                throw new ValidationException("Продолжительность фильма должна быть положительным числом");
             }
-            // если публикация найдена и все условия соблюдены, обновляем её содержимое
+            oldFilm.setName(newFilm.getName());
             oldFilm.setDescription(newFilm.getDescription());
+            oldFilm.setReleaseDate(newFilm.getReleaseDate());
+            oldFilm.setDuration(newFilm.getDuration());
+            films.put(oldFilm.getId(), oldFilm);
+            log.info("Изменен фильм " + oldFilm);
             return oldFilm;
         }
-        throw new NotFoundException("Пост с id = " + newFilm.getId() + " не найден");
+        throw new ValidationException("Фильм с id = " + newFilm.getId() + " не найден");
     }
 
-    // вспомогательный метод для генерации идентификатора нового поста
-    private long getNextId() {
-        long currentMaxId = posts.keySet()
+    private int getNextId() {
+        int currentMaxId = films.keySet()
                 .stream()
-                .mapToLong(id -> id)
+                .mapToInt(id -> id)
                 .max()
                 .orElse(0);
         return ++currentMaxId;

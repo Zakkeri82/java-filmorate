@@ -1,18 +1,23 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
+@Validated
 @RestController
+@RequestMapping("/users")
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
+    private final Map<Integer, User> users = new HashMap<>();
 
     @GetMapping
     public Collection<User> getAllUsers() {
@@ -20,51 +25,64 @@ public class UserController {
     }
 
     @PostMapping
-    public User createNewUser(@RequestBody User user) {
-        if (user.getEmail() == null) {
-            throw new ConditionsNotMetException("Имейл должен быть указан");
-        }
-        boolean isExist = users.values()
-                .stream().anyMatch(user1 -> user1.getEmail().equals(user.getEmail()));
-        if (isExist) {
-            throw new DuplicatedDataException("Этот имейл уже используется");
+    public User create(@Valid @RequestBody User user) {
+        boolean isNoValidBirthday = user.getBirthday().isAfter(LocalDate.now());
+        if (user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
+            log.error("Электронная почта не может быть пустой и должна содержать символ '@'");
+            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ '@'");
+        } else if (user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
+            log.error("Логин не может быть пустым и содержать пробелы");
+            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
+        } else if (isNoValidBirthday) {
+            log.error("Некорректная дата рождения");
+            throw new ValidationException("Некорректная дата рождения");
         }
         user.setId(getNextId());
-        user.setRegistrationDate(Instant.now());
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
         users.put(user.getId(), user);
+        log.info("Добавлен пользователь " + user.getName());
         return user;
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User newUser) {
+    public User update(@Valid @RequestBody User newUser) {
         if (newUser.getId() == null) {
-            throw new ConditionsNotMetException("Id должен быть указан");
+            throw new ValidationException("Id должен быть указан");
         }
-        boolean isExist = users.values()
-                .stream().anyMatch(user1 -> user1.getEmail().equals(newUser.getEmail()));
-        if (isExist) {
-            throw new DuplicatedDataException("Этот имейл уже используется");
-        }
-        User oldUser = users.get(newUser.getId());
         if (users.containsKey(newUser.getId())) {
-            if (newUser.getEmail() != null) {
-                oldUser.setEmail(newUser.getEmail());
+            User oldUser = users.get(newUser.getId());
+            boolean isNoValidBirthday = newUser.getBirthday().isAfter(LocalDate.now());
+            if (newUser.getEmail().isEmpty() || !newUser.getEmail().contains("@")) {
+                log.error("Электронная почта не может быть пустой и должна содержать символ '@'");
+                throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ '@'");
+            } else if (newUser.getLogin().isEmpty() || newUser.getLogin().contains(" ")) {
+                log.error("Логин не может быть пустым и содержать пробелы");
+                throw new ValidationException("Логин не может быть пустым и содержать пробелы");
+            } else if (isNoValidBirthday) {
+                log.error("Некорректная дата рождения");
+                throw new ValidationException("Некорректная дата рождения");
             }
-            if (newUser.getUsername() != null) {
-                oldUser.setUsername(newUser.getUsername());
-            }
-            if (newUser.getPassword() != null) {
-                oldUser.setPassword(newUser.getPassword());
+            oldUser.setEmail(newUser.getEmail());
+            oldUser.setLogin(newUser.getLogin());
+            oldUser.setBirthday(newUser.getBirthday());
+            if (newUser.getName() == null || newUser.getName().isBlank()) {
+                oldUser.setName(newUser.getLogin());
+            } else {
+                oldUser.setName(newUser.getName());
             }
             users.put(oldUser.getId(), oldUser);
+            log.info("Изменен пользователь " + oldUser.getName());
+            return oldUser;
         }
-        return oldUser;
+        throw new ValidationException("Фильм с id = " + newUser.getId() + " не найден");
     }
 
-    private long getNextId() {
-        long currentMaxId = users.keySet()
+    private int getNextId() {
+        int currentMaxId = users.keySet()
                 .stream()
-                .mapToLong(id -> id)
+                .mapToInt(id -> id)
                 .max()
                 .orElse(0);
         return ++currentMaxId;
