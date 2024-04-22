@@ -1,17 +1,16 @@
 package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.boot.convert.DurationFormat;
-import org.springframework.boot.convert.DurationStyle;
 
-import java.time.Duration;
 import java.time.LocalDate;
 
 /**
  * Film.
  */
 @Data
+@AllArgsConstructor
 public class Film {
 
     private Integer id;
