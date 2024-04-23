@@ -27,7 +27,7 @@ public class UserService {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
-        log.info("Добавлен пользователь " + user.getName());
+        log.info("Добавлен пользователь {}", user.getName());
         return user;
     }
 
@@ -35,31 +35,29 @@ public class UserService {
         if (newUser.getId() == null) {
             throw new ValidationException("Id должен быть указан");
         }
-        if (users.containsKey(newUser.getId())) {
-            User oldUser = users.get(newUser.getId());
-            validateUser(newUser);
-            oldUser.setEmail(newUser.getEmail());
-            oldUser.setLogin(newUser.getLogin());
-            oldUser.setBirthday(newUser.getBirthday());
-            if (newUser.getName() == null || newUser.getName().isBlank()) {
-                oldUser.setName(newUser.getLogin());
-            } else {
-                oldUser.setName(newUser.getName());
-            }
-            users.put(oldUser.getId(), oldUser);
-            log.info("Изменен пользователь " + oldUser.getName());
-            return oldUser;
+        if (!users.containsKey(newUser.getId())) {
+            throw new ValidationException("Фильм с id = " + newUser.getId() + " не найден");
         }
-        throw new ValidationException("Фильм с id = " + newUser.getId() + " не найден");
+        validateUser(newUser);
+        if (newUser.getName() == null || newUser.getName().isBlank()) {
+            newUser.setName(newUser.getLogin());
+        } else {
+            newUser.setName(newUser.getName());
+        }
+        users.put(newUser.getId(), newUser);
+        log.info("Изменен пользователь {}", newUser.getName());
+        return newUser;
     }
 
     void validateUser(User user) {
         boolean isNoValidBirthday = user.getBirthday().isAfter(LocalDate.now());
         if (user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ '@'");
-        } else if (user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
+        }
+        if (user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
             throw new ValidationException("Логин не может быть пустым и содержать пробелы");
-        } else if (isNoValidBirthday) {
+        }
+        if (isNoValidBirthday) {
             throw new ValidationException("Некорректная дата рождения");
         }
     }
