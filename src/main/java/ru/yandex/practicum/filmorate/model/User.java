@@ -1,32 +1,33 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDate;
 
 /**
- * Film.
+ * User.
  */
 @Data
 @AllArgsConstructor
-public class Film {
+public class User {
 
     private Integer id;
 
+    @Email
     @NotBlank
+    private String email;
+
+    @NotBlank
+    @NotNull
+    private String login;
+
     private String name;
 
-    @Size(min = 1, max = 200)
-    private String description;
-
     @Past
-    private LocalDate releaseDate;
-
-    @Min(1)
-    private long duration;
+    private LocalDate birthday;
 }
