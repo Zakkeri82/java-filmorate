@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.storage.film;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,9 +10,9 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class FilmServiceTest {
+class InMemoryFilmStorageTest {
 
-    static FilmService filmService = new FilmService();
+    static InMemoryFilmStorage inMemoryFilmStorage = new InMemoryFilmStorage();
 
     Film film;
 
@@ -29,7 +29,7 @@ class FilmServiceTest {
 
     @Test
     void validFilm() {
-        filmService.validateFilm(film);
+        inMemoryFilmStorage.validateFilm(film);
     }
 
     @Test
@@ -37,7 +37,7 @@ class FilmServiceTest {
         film.setName(null);
         Exception exception = assertThrows(
                 ValidationException.class,
-                () -> filmService.validateFilm(film)
+                () -> inMemoryFilmStorage.validateFilm(film)
         );
         assertEquals(
                 "Название не может быть пустым",
@@ -52,7 +52,7 @@ class FilmServiceTest {
                 + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
         Exception exception = assertThrows(
                 ValidationException.class,
-                () -> filmService.validateFilm(film)
+                () -> inMemoryFilmStorage.validateFilm(film)
         );
         assertEquals(
                 "Описание не может быть больше 200 символов",
@@ -65,7 +65,7 @@ class FilmServiceTest {
         film.setReleaseDate(LocalDate.of(1894, 10, 14));
         Exception exception = assertThrows(
                 ValidationException.class,
-                () -> filmService.validateFilm(film)
+                () -> inMemoryFilmStorage.validateFilm(film)
         );
         assertEquals(
                 "Некорректная дата релиза фильма",
@@ -78,7 +78,7 @@ class FilmServiceTest {
         film.setDuration(-1L);
         Exception exception = assertThrows(
                 ValidationException.class,
-                () -> filmService.validateFilm(film)
+                () -> inMemoryFilmStorage.validateFilm(film)
         );
         assertEquals(
                 "Продолжительность фильма должна быть положительным числом",

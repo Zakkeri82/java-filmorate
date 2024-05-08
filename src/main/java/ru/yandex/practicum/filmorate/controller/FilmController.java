@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 
 import java.util.Collection;
 
@@ -12,24 +12,24 @@ import java.util.Collection;
 @RequestMapping("/films")
 public class FilmController {
 
-    private final FilmService filmService;
+    private final InMemoryFilmStorage inMemoryFilmStorage;
 
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
+    public FilmController(InMemoryFilmStorage inMemoryFilmStorage) {
+        this.inMemoryFilmStorage = inMemoryFilmStorage;
     }
 
     @GetMapping
     public Collection<Film> getAllFilms() {
-        return filmService.getAllFilms();
+        return inMemoryFilmStorage.getAllFilms();
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        return filmService.create(film);
+        return inMemoryFilmStorage.create(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film newFilm) {
-        return filmService.update(newFilm);
+        return inMemoryFilmStorage.update(newFilm);
     }
 }

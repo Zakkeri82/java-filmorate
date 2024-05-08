@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.storage.user;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,9 +10,9 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class UserServiceTest {
+class InMemoryUserStorageTest {
 
-    static UserService userService = new UserService();
+    static InMemoryUserStorage inMemoryUserStorage = new InMemoryUserStorage();
 
     User user;
 
@@ -29,7 +29,7 @@ class UserServiceTest {
 
     @Test
     void validUser() {
-        userService.validateUser(user);
+        inMemoryUserStorage.validateUser(user);
     }
 
     @Test
@@ -37,7 +37,7 @@ class UserServiceTest {
         user.setEmail("");
         Exception exception = assertThrows(
                 ValidationException.class,
-                () -> userService.validateUser(user)
+                () -> inMemoryUserStorage.validateUser(user)
         );
         assertEquals(
                 "Электронная почта не может быть пустой и должна содержать символ '@'",
@@ -50,7 +50,7 @@ class UserServiceTest {
         user.setEmail("pochta.ru");
         Exception exception = assertThrows(
                 ValidationException.class,
-                () -> userService.validateUser(user)
+                () -> inMemoryUserStorage.validateUser(user)
         );
         assertEquals(
                 "Электронная почта не может быть пустой и должна содержать символ '@'",
@@ -63,7 +63,7 @@ class UserServiceTest {
         user.setLogin("");
         Exception exception = assertThrows(
                 ValidationException.class,
-                () -> userService.validateUser(user)
+                () -> inMemoryUserStorage.validateUser(user)
         );
         assertEquals(
                 "Логин не может быть пустым и содержать пробелы",
@@ -76,7 +76,7 @@ class UserServiceTest {
         user.setLogin("login space");
         Exception exception = assertThrows(
                 ValidationException.class,
-                () -> userService.validateUser(user)
+                () -> inMemoryUserStorage.validateUser(user)
         );
         assertEquals(
                 "Логин не может быть пустым и содержать пробелы",
@@ -89,7 +89,7 @@ class UserServiceTest {
         user.setBirthday(LocalDate.of(2100, 2, 20));
         Exception exception = assertThrows(
                 ValidationException.class,
-                () -> userService.validateUser(user)
+                () -> inMemoryUserStorage.validateUser(user)
         );
         assertEquals(
                 "Некорректная дата рождения",
