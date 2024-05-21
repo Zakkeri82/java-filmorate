@@ -1,7 +1,8 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.service.user;
 
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
+
 }

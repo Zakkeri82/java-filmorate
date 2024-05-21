@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
@@ -22,6 +23,12 @@ public class UserController {
         return inMemoryUserStorage.getAllUsers();
     }
 
+    @GetMapping("/{id}")
+    public User getUserId(@PathVariable String id) {
+        return inMemoryUserStorage.findUserId(id);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         return inMemoryUserStorage.create(user);

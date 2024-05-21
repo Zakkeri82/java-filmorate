@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 
 import java.util.Collection;
@@ -21,6 +22,11 @@ public class FilmController {
     @GetMapping
     public Collection<Film> getAllFilms() {
         return inMemoryFilmStorage.getAllFilms();
+    }
+
+    @GetMapping("/{id}")
+    public Film getFilmId(@PathVariable String id) {
+        return inMemoryFilmStorage.findFilmId(id);
     }
 
     @PostMapping
