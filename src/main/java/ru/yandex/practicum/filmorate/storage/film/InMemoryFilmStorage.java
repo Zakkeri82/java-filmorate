@@ -46,7 +46,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new ValidationException("Id должен быть указан");
         }
         if (!films.containsKey(newFilm.getId())) {
-            throw new ValidationException("Фильм с id = " + newFilm.getId() + " не найден");
+            throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
         }
         validateFilm(newFilm);
         films.put(newFilm.getId(), newFilm);

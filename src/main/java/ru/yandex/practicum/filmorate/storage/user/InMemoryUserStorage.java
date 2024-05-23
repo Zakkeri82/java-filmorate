@@ -49,7 +49,7 @@ public class InMemoryUserStorage implements UserStorage {
             throw new ValidationException("Id должен быть указан");
         }
         if (!users.containsKey(newUser.getId())) {
-            throw new ValidationException("Фильм с id = " + newUser.getId() + " не найден");
+            throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
         }
         validateUser(newUser);
         if (newUser.getName() == null || newUser.getName().isBlank()) {
