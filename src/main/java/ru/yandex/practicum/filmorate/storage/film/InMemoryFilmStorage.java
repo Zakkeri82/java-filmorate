@@ -1,7 +1,8 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -11,15 +12,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-@Service
-public class FilmService {
+@Component
+public class InMemoryFilmStorage implements FilmStorage {
 
     private final Map<Integer, Film> films = new HashMap<>();
 
+    @Override
     public Collection<Film> getAllFilms() {
         return films.values();
     }
 
+    @Override
+    public Film findFilmId(String id) {
+        int actId = Integer.parseInt(id);
+        return films.values().stream()
+                .filter(p -> p.getId().equals(actId))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(String.format("Фильм № %d не найден", actId)));
+    }
+
+    @Override
     public Film create(Film film) {
         validateFilm(film);
         film.setId(getNextId());
@@ -28,12 +40,13 @@ public class FilmService {
         return film;
     }
 
+    @Override
     public Film update(Film newFilm) {
         if (newFilm.getId() == null) {
             throw new ValidationException("Id должен быть указан");
         }
         if (!films.containsKey(newFilm.getId())) {
-            throw new ValidationException("Фильм с id = " + newFilm.getId() + " не найден");
+            throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
         }
         validateFilm(newFilm);
         films.put(newFilm.getId(), newFilm);

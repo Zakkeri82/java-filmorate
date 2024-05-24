@@ -1,7 +1,8 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -11,15 +12,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-@Service
-public class UserService {
+@Component
+public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Integer, User> users = new HashMap<>();
 
+    @Override
     public Collection<User> getAllUsers() {
         return users.values();
     }
 
+    @Override
+    public User findUserId(String id) {
+        int actId = Integer.parseInt(id);
+        return users.values().stream()
+                .filter(p -> p.getId().equals(actId))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь № %d не найден", actId)));
+    }
+
+    @Override
     public User create(User user) {
         validateUser(user);
         user.setId(getNextId());
@@ -31,12 +43,13 @@ public class UserService {
         return user;
     }
 
+    @Override
     public User update(User newUser) {
         if (newUser.getId() == null) {
             throw new ValidationException("Id должен быть указан");
         }
         if (!users.containsKey(newUser.getId())) {
-            throw new ValidationException("Фильм с id = " + newUser.getId() + " не найден");
+            throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
         }
         validateUser(newUser);
         if (newUser.getName() == null || newUser.getName().isBlank()) {
