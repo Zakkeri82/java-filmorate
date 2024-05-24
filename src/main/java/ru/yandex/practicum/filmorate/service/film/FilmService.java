@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service.film;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.ErrorException;
@@ -14,12 +14,12 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FilmService implements FilmStorage {
 
-    private InMemoryFilmStorage inMemoryFilmStorage;
+    private final InMemoryFilmStorage inMemoryFilmStorage;
 
-    private InMemoryUserStorage inMemoryUserStorage;
+    private final InMemoryUserStorage inMemoryUserStorage;
 
     @Override
     public Collection<Film> getAllFilms() {
